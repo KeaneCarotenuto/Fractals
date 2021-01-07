@@ -4,6 +4,6 @@
  Use Arrow Keys [^] to move around the set.
              [<][v][>]
 
- Use left [SHIFT] and left [CTRL] to zoom in and our repsectivly.
+ Use left [SHIFT] and left [CTRL] to zoom in and our respectively.
 
- Use [+] and [-] to increase or decrease the render depth rerspectivly.
+ Use [+] and [-] to increase or decrease the render depth respectively.
