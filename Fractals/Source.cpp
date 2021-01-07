@@ -15,11 +15,12 @@ std::vector<sf::Color> cols = { };
 
 
 long double zoom = 2;
-
-long double xcoord = -0.761574;
-long double ycoord = -0.0847596;
+long double xcoord = -0.7611251856176778352;
+long double ycoord = -0.084749953259429494645;
 
 long double depth = 1;
+
+time_t sinceLast = 0;
 
 //double xcoord = -2;
 //double ycoord = -1;
@@ -55,6 +56,8 @@ void rendSquare(int x1, int x2, int y1, int y2) {
 }
 
 int main() {
+
+	std::cout.precision(20);
 
 	std::cout << "Booting" << std::endl;
 
@@ -146,7 +149,7 @@ int main() {
 			update = false;
 		}
 
-		bool spin = true;
+		bool spin = false;
 
 		if (spin){
 			cols.push_back(cols[0]);
@@ -158,8 +161,16 @@ int main() {
 			depth++;
 			update = true;
 		}
+
+		//std::system("CLS");
+
+		COORD pos = { 0, 0 };
+		HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleCursorPosition(output, pos);
+
+		sinceLast = std::time(0) - sinceLast;
 		
-		std::cout << zoom << ", t: " << std::time(0) - time << std::endl;
+		std::cout << "Scale: " << zoom << "                  \nTime: " << sinceLast << "                 \nCoords:  (" << (long double)xcoord << ", " << (long double)ycoord << ")                    " << "                 \nDepth: " << depth << "                      ";
 
 		sf::Event event;
 		while (window.pollEvent(event))
