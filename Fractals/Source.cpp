@@ -147,6 +147,14 @@ int main() {
 
 			resetDepth = false;
 			update = false;
+
+			COORD pos = { 0, 0 };
+			HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+			SetConsoleCursorPosition(output, pos);
+
+			sinceLast = std::time(0) - sinceLast;
+
+			std::cout << "Scale: " << zoom << "                  \nTime: " << sinceLast << "                 \nCoords:  (" << (long double)xcoord << ", " << (long double)ycoord << ")                    " << "                 \nDepth: " << depth << "                      ";
 		}
 
 		bool spin = false;
@@ -161,16 +169,6 @@ int main() {
 			depth++;
 			update = true;
 		}
-
-		//std::system("CLS");
-
-		COORD pos = { 0, 0 };
-		HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
-		SetConsoleCursorPosition(output, pos);
-
-		sinceLast = std::time(0) - sinceLast;
-		
-		std::cout << "Scale: " << zoom << "                  \nTime: " << sinceLast << "                 \nCoords:  (" << (long double)xcoord << ", " << (long double)ycoord << ")                    " << "                 \nDepth: " << depth << "                      ";
 
 		sf::Event event;
 		while (window.pollEvent(event))
