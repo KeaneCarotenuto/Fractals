@@ -5,8 +5,8 @@
 #include <complex>
 #include <thread> 
 
-#define width 128
-#define height 128
+#define width 512
+#define height 512
 
 auto pixels = new sf::RectangleShape[width][height];
 
@@ -18,7 +18,7 @@ long double zoom = 2;
 long double xcoord = -0.7611251856176778352;
 long double ycoord = -0.084749953259429494645;
 
-long double depth = 1;
+long double depth = 50;
 
 time_t sinceLast = 0;
 
@@ -69,7 +69,6 @@ int main() {
 	time_t time = std::time(0);
 
 	bool update = true;
-	bool resetDepth = true;
 	bool autoDepth = false;
 
 	int r = 125;
@@ -108,7 +107,6 @@ int main() {
 	{
 
 		if (update == true) {
-			if (resetDepth == true) depth = 1 / zoom;
 
 			int vSplit = 2;
 			int hSplit = 2;
@@ -144,8 +142,6 @@ int main() {
 			}
 
 			window.display();
-
-			resetDepth = false;
 			update = false;
 
 			COORD pos = { 0, 0 };
@@ -213,6 +209,8 @@ int main() {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {
 				depth += 10;
 				update = true;
+
+				if (depth < 10) depth = 10;
 			}
 
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {
