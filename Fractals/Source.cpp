@@ -3,10 +3,11 @@
 #include <SFML/Audio.hpp>
 #include <Windows.h>
 #include <complex>
-#include <thread> 
+#include <chrono>
+#include <thread>
 
-#define width 512
-#define height 512
+#define width 256
+#define height 256
 
 auto pixels = new sf::RectangleShape[width][height];
 
@@ -18,12 +19,12 @@ long double zoom = 2;
 long double xcoord = -0.7611251856176778352;
 long double ycoord = -0.084749953259429494645;
 
-long double depth = 50;
-
-time_t sinceLast = 0;
+long double itterations = 100;
 
 //double xcoord = -2;
 //double ycoord = -1;
+
+int threads = 1;
 
 void rendPixel(int x, int y) {
 
@@ -36,13 +37,14 @@ void rendPixel(int x, int y) {
 
 	long double count = 0;
 
-	while (std::abs(z) < 20 && count < (depth)) {
+	while (std::abs(z) < 20 && count < (itterations)) {
 		z = z * z + point /** std::complex<double>(0, count / 10)*/;
 		count += 1;
 	}
 
-
 	rect.setFillColor(cols[(int)count % cols.size()]);
+	rect.setOutlineColor(sf::Color::Black);
+	rect.setOutlineThickness(0.1f);
 
 	pixels[x][y] = rect;
 }
@@ -59,9 +61,68 @@ int main() {
 
 	std::cout.precision(20);
 
-	std::cout << "Booting" << std::endl;
+	std::cout << "Booting" << "\n";
 
+	std::system("CLS");
+
+	unsigned int n = std::thread::hardware_concurrency();
+	std::cout <<"Concurrent threads supported by your machine: " << n << "\n";
+
+	std::cout << "Enter Desired Threads: ";
+
+	std::cin >> threads;
+
+	if ((int)threads <= 0) {
+		threads = 1;
+	}
+
+	std::system("CLS");
+
+	//Make Window
 	sf::RenderWindow window(sf::VideoMode(width, height), "Fractals By Keane Carotenuto");
+
+	////Setting coordinates of mid screen, and the amount to render outwards from that point
+	//float xcoord = 0.0f;
+	//float ycoord = 0.0f;
+	//float scale = 1.5f;
+
+	////from -2 to 2 is 4, so we divide that by the view port size, to get how much we need to increment by for each pixel
+	//for (float y = ycoord - scale; y < ycoord + scale; y += ((2 * scale) / height)) {
+	//	for (float x = xcoord - scale; x < xcoord + scale; x += ((2 * scale) / width)) {
+	//		//Make the point
+	//		std::complex<float> point(x, y);
+	//		//Set z to 0 at first
+	//		std::complex<float> z(0, 0);
+
+	//		//Make the "pixel"
+	//		sf::RectangleShape rect;
+	//		rect.setSize({ 1, 1 });
+	//		//Set it to the right position on screen (move into positives, and scale position by screen size)
+	//		rect.setPosition((x - (xcoord - scale)) * (width / (2 * scale)), (y - (ycoord - scale)) * (height / (2 * scale)));
+
+	//		//Init count
+	//		long double count = 0;
+
+	//		//Repeat until gets out of bounds, or reaches over 100 tries
+	//		while (std::abs(z) < 20 && count < (100)) {
+	//			z = z * z + point /** std::complex<double>(0, count / 10)*/;
+	//			count += 1;
+	//		}
+
+	//		//Set the colour to red, with brightness of how many tries
+	//		rect.setFillColor(sf::Color::Color(count, 0, 0));
+
+	//		//Draw pixel
+	//		window.draw(rect);
+	//	}
+	//}
+	//
+	////Display pixel
+	//window.display();
+
+	////Wait for user before quit
+	//int wait;
+	//std::cin >> wait;
 
 	std::vector<std::thread*> ts;
 	ts.clear();
@@ -108,17 +169,16 @@ int main() {
 
 		if (update == true) {
 
-			int vSplit = 2;
-			int hSplit = 2;
+			auto start = std::chrono::high_resolution_clock::now();
 
-			for (int y = 0; y < vSplit; y++) {
-				for (int x = 0; x < hSplit; x++) {
-					std::thread* t_thread = new std::thread(rendSquare, x * width / hSplit, (x + 1) * width / hSplit, y * height / vSplit, (y + 1) * height / vSplit);
+			
+
+			for (int y = 0; y < threads; y++) {
+					std::thread* t_thread = new std::thread(rendSquare, 0, width, y * height / threads, (y + 1) * height / threads);
 
 					//std::cout << "X1: " << x * width / hSplit << ",   X2: " << (x + 1) * width / hSplit << ",   Y1: " << y * height / vSplit << ",   Y2: " << (y + 1) * height / vSplit << std::endl;
 
 					ts.push_back(t_thread);
-				}
 			}
 
 			for (std::thread* _t : ts) {
@@ -141,6 +201,8 @@ int main() {
 				}
 			}
 
+			auto finish = std::chrono::high_resolution_clock::now();
+
 			window.display();
 			update = false;
 
@@ -148,9 +210,13 @@ int main() {
 			HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
 			SetConsoleCursorPosition(output, pos);
 
-			sinceLast = std::time(0) - sinceLast;
+			std::chrono::duration<double> elapsed = finish - start;
 
-			std::cout << "Scale: " << zoom << "                  \nTime: " << sinceLast << "                 \nCoords:  (" << (long double)xcoord << ", " << (long double)ycoord << ")                    " << "                 \nDepth: " << depth << "                      ";
+			std::cout	<<						   "Scale: " << zoom
+						<< "                      \nTime: " << elapsed.count() 
+						<< "                      \nCoords:  (" << (long double)xcoord << ", " << (long double)ycoord << ")                      " 
+						<< "                      \nItterations: " << itterations << "                      " 
+						<< "                      \nThreads Used: " << threads << "                      ";
 		}
 
 		bool spin = false;
@@ -162,7 +228,7 @@ int main() {
 		}
 
 		if (autoDepth) {
-			depth++;
+			itterations++;
 			update = true;
 		}
 
@@ -206,18 +272,22 @@ int main() {
 				autoDepth = !autoDepth;
 			}
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {
-				depth += 10;
-				update = true;
-
-				if (depth < 10) depth = 10;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+				itterations = 1000;
 			}
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {
-				depth -= 10;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::M)) {
+				itterations += 10;
 				update = true;
 
-				if (depth < 10) depth = 10;
+				if (itterations < 10) itterations = 10;
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
+				itterations -= 10;
+				update = true;
+
+				if (itterations < 10) itterations = 10;
 			}
 		}
 	}
